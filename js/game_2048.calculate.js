@@ -12,8 +12,7 @@ game_2048.calculate = (function() {
         mergeElement,
         moveElement,
         receiveEvent,
-        randomNewElement,
-        initModule;
+        randomNewElement;
 
     // ------------------------------------ 结束变量定义 ---------------------------------
 
@@ -37,6 +36,11 @@ game_2048.calculate = (function() {
             k,
             grid_queue = [];
         // debugger;
+        if (emit_event.event === 'restart') {
+
+            // 重启游戏
+        }
+        // debugger;
         switch(emit_event.data) {
 
             // UP
@@ -53,13 +57,16 @@ game_2048.calculate = (function() {
 
 
                                 for (k = i + 1; k < 3; ++k) {
-                                    coordinate_map[k - 1][j] = coordinate_map[k][j];
+                                    coordinate_map[k][j] = coordinate_map[k + 1][j];
                                 }
                                 coordinate_map[k][j] = 0;
                             }
                         }
                     }
                 }
+
+                game_2048.interface.catchMerged(grid_queue);
+                grid_queue = [];
                 // 合并坐标发送至interface
                 break;
             // Right
@@ -82,6 +89,9 @@ game_2048.calculate = (function() {
                         }
                     }
                 }
+
+                game_2048.interface.catchMerged(grid_queue);
+                grid_queue = [];
                 break;
 
             // Down
@@ -96,8 +106,8 @@ game_2048.calculate = (function() {
                                     y : j
                                 });
 
-
-                                for (k = i - 1; k > 0; ++k) {
+                                // debugger;
+                                for (k = i - 1; k > 0; --k) {
                                     coordinate_map[k][j] = coordinate_map[k - 1][j];
                                 }
                                 coordinate_map[k][j] = 0;
@@ -105,6 +115,9 @@ game_2048.calculate = (function() {
                         }
                     }
                 }
+
+                game_2048.interface.catchMerged(grid_queue);
+                grid_queue = [];
                 break;
 
             // Left
@@ -127,9 +140,9 @@ game_2048.calculate = (function() {
                         }
                     }
                 }
-                break;
 
-            case 4:
+                game_2048.interface.catchMerged(grid_queue);
+                grid_queue = [];
                 break;
 
             default:
@@ -137,6 +150,8 @@ game_2048.calculate = (function() {
         }
 
         coordinate.map = coordinate_map;
+
+        console.log('merged:', coordinate_map);
     };
 
 
@@ -146,6 +161,12 @@ game_2048.calculate = (function() {
             k;
         //debugger;
         console.log(emit_event);
+
+        // debugger;
+        if (emit_event.event === 'restart') {
+
+            // 重启游戏
+        }
         switch(emit_event.data) {
 
             // UP
@@ -212,10 +233,6 @@ game_2048.calculate = (function() {
                     }
                 }
                 break;
-
-            case 4:
-                // emit to interface
-                break;
             default:
                 break;
         }
@@ -254,6 +271,9 @@ game_2048.calculate = (function() {
             else {
                 coordinate_map[insert_position.x][insert_position.y] = 2;
             }
+
+            // 发送数据，确认新增坐标
+            game_2048.interface.catchNew(insert_position);
             coordinate.avail.splice(insert_num, 1);
         }
         coordinate.avail = [];
@@ -274,14 +294,10 @@ game_2048.calculate = (function() {
         return coordinate.map;
     };
 
-    initModule = function () {
-
-    };
     // --------------------------------- 结束公共方法 -----------------------------------
 
     return {
         randomNewElement: randomNewElement,
         receiveEvent: receiveEvent,
-        initModule : initModule
     }
 }());

@@ -22,6 +22,7 @@ game_2048.keyboard = (function () {
 
     bindKeyBoardEvent = function () {
         $(document).on('keydown', function (event) {
+            // debugger;
             var modifiers = event.altKey ||
                     event.ctrlKey ||
                     event.metaKey ||
