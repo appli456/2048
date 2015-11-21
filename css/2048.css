@@ -301,7 +301,7 @@
 
 body {
     background: #FAF8EF none repeat scroll 0 0;
-    font-family: "Microsoft YaHei UI" Arial;
+    font-family: "Microsoft YaHei UI", Arial;
 }
 div {
     overflow: hidden;
