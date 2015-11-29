@@ -11,6 +11,8 @@ game_2048.calculate = (function() {
         availInsert,
         mergeElement,
         moveElement,
+        changeCoordinate,
+        copyCoordinate,
         receiveEvent,
         randomNewElement;
 
@@ -24,7 +26,7 @@ game_2048.calculate = (function() {
         for (i = 0; i < 4; ++i) {
             for (j = 0; j < 4; ++j) {
                 if ( !coordinate_map[i][j]) {
-                    coordinate.avail.push({x : i, y : j});
+                    coordinate.avail.push({x : j, y : i});
                 }
             }
         }
@@ -51,8 +53,8 @@ game_2048.calculate = (function() {
                             if (coordinate_map[i][j] === coordinate_map[i + 1][j]) {
                                 coordinate_map[i][j] = coordinate_map[i][j] << 1;
                                 grid_queue.push({
-                                    x : i,
-                                    y : j
+                                    x : j,
+                                    y : i
                                 });
 
 
@@ -77,8 +79,8 @@ game_2048.calculate = (function() {
                             if (coordinate_map[i][j] === coordinate_map[i][j - 1]) {
                                 coordinate_map[i][j] = coordinate_map[i][j] << 1;
                                 grid_queue.push({
-                                    x: i,
-                                    y: j
+                                    x: j,
+                                    y: i
                                 });
 
                                 for (k = j - 1; k > 0; --k) {
@@ -102,8 +104,8 @@ game_2048.calculate = (function() {
                             if (coordinate_map[i][j] === coordinate_map[i - 1][j]) {
                                 coordinate_map[i][j] = coordinate_map[i][j] << 1;
                                 grid_queue.push({
-                                    x : i,
-                                    y : j
+                                    x : j,
+                                    y : i
                                 });
 
                                 // debugger;
@@ -128,8 +130,8 @@ game_2048.calculate = (function() {
                             if (coordinate_map[i][j] === coordinate_map[i][j + 1]) {
                                 coordinate_map[i][j] = coordinate_map[i][j] << 1;
                                 grid_queue.push({
-                                    x: i,
-                                    y: j
+                                    x: j,
+                                    y: i
                                 });
 
                                 for (k = j + 1; k < 3; ++k) {
@@ -149,9 +151,11 @@ game_2048.calculate = (function() {
                 break;
         }
 
-        coordinate.map = coordinate_map;
+
 
         console.log('merged:', coordinate_map);
+
+        return coordinate_map;
     };
 
 
@@ -237,7 +241,36 @@ game_2048.calculate = (function() {
                 break;
         }
         console.log('Move:', coordinate_map);
-        coordinate.map = coordinate_map;
+        return coordinate_map;
+    };
+
+    changeCoordinate = function (coordinate_map) {
+        var i,
+            j,
+            counter = 0;
+
+        for (i = 0; i < 4; ++i) {
+            for (j = 0; j < 4; ++j) {
+                if (coordinate_map[i][j] === coordinate.map[i][j]) {
+                    counter++;
+                }
+            }
+        }
+
+        return counter !== 16;
+    };
+
+    copyCoordinate = function (coordinate_map) {
+        var copy_coordinate = [],
+            i;
+
+        for (i in coordinate_map) {
+            if (coordinate_map.hasOwnProperty(i)) {
+                copy_coordinate.push(coordinate_map[i].slice());
+            }
+        }
+
+        return copy_coordinate;
     };
 
     // ---------------------------------- 结束DOM 方法 ----------------------------------
@@ -265,11 +298,14 @@ game_2048.calculate = (function() {
             if_four = Math.random() > 0.9;
             insert_num = Math.floor(Math.random() * coordinate.avail.length);
             insert_position = coordinate.avail[insert_num];
+            if (insert_position === undefined) {
+                return coordinate_map;
+            }
             if (if_four) {
-                coordinate_map[insert_position.x][insert_position.y] = 4;
+                coordinate_map[insert_position.y][insert_position.x] = 4;
             }
             else {
-                coordinate_map[insert_position.x][insert_position.y] = 2;
+                coordinate_map[insert_position.y][insert_position.x] = 2;
             }
 
             // 发送数据，确认新增坐标
@@ -281,16 +317,21 @@ game_2048.calculate = (function() {
     };
 
     receiveEvent = function (emit_event, coordinate_map) {
+        var pre_coordinate = copyCoordinate(coordinate_map);
+        //console.log('Pre', pre_coordinate);
         if (emit_event.data === 4) {
             // 发射至interface
             return;
         }
 
+        coordinate_map = moveElement(emit_event, coordinate_map);
+        coordinate_map = mergeElement(emit_event, coordinate_map);
         coordinate.map = coordinate_map;
-        moveElement(emit_event, coordinate.map);
-        mergeElement(emit_event, coordinate.map);
-        coordinate.map = randomNewElement(coordinate.map, false);
-        console.log('Array', coordinate.map);
+        console.log(pre_coordinate);
+        console.log(coordinate.map);
+        if (changeCoordinate(pre_coordinate)) {
+            coordinate.map = randomNewElement(coordinate.map, false);
+        }
         return coordinate.map;
     };
 
@@ -298,6 +339,6 @@ game_2048.calculate = (function() {
 
     return {
         randomNewElement: randomNewElement,
-        receiveEvent: receiveEvent,
+        receiveEvent: receiveEvent
     }
 }());

@@ -24,10 +24,10 @@ game_2048.shell = (function () {
     // ------------------------------------ DOM ---------------------------------
 
 
-
     initCoordinate = function () {
         var i,
             j;
+        coordinate.new_map = [];
         for (i = 0; i < 4; ++i) {
             coordinate.new_map.push([]);
             for (j = 0; j < 4; ++j) {
@@ -54,7 +54,6 @@ game_2048.shell = (function () {
 
     joinEvent = function (emit_event) {
         // debugger;
-
         // 问题待解决
         if (!event_queue[emit_event]) {
             event_queue.push(emit_event);
